@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/hiragana")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class QuizController {
 
     private final QuizService quizService;
