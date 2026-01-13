@@ -43,4 +43,17 @@ public class QuizService {
 
 
     }
+
+    public AnswerResponseDTO checkAnswer(AnswerRequestDTO request) {
+        Hiragana correctChar = hiraganaRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new RuntimeException("Invalid Question ID"));
+
+        boolean isCorrect = correctChar.getRomaji().equalsIgnoreCase(request.getSelectedRomaji());
+
+        return AnswerResponseDTO.builder()
+                .correct(isCorrect)
+                .correctRomaji(correctChar.getRomaji())
+                .message(isCorrect ? "Correct! Well done." : "Oops! The correct answer was " + correctChar.getRomaji())
+                .build();
+    }
 }
