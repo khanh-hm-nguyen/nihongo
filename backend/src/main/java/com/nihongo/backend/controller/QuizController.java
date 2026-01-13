@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/hiragana")
 @RequiredArgsConstructor
@@ -21,5 +23,10 @@ public class QuizController {
     @PostMapping("/check")
     public ResponseEntity<AnswerResponseDTO> checkAnswer(@RequestBody AnswerRequestDTO request) {
         return ResponseEntity.ok(quizService.checkAnswer(request));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<QuizResponseDTO>> getAllQuestions() {
+        return ResponseEntity.ok(quizService.getAllQuestions());
     }
 }

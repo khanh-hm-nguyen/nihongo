@@ -16,4 +16,10 @@ export const quizService = {
     });
     return handleResponse(res);
   },
+
+  fetchAllQuestions: async (): Promise<QuizResponse[]> => {
+    const res = await fetch(`${API_BASE_URL}/all`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch questions");
+    return res.json();
+  },
 };

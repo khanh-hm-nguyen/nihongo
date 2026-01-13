@@ -56,4 +56,31 @@ public class QuizService {
                 .message(isCorrect ? "Correct! Well done." : "Oops! The correct answer was " + correctChar.getRomaji())
                 .build();
     }
+
+
+    public List<QuizResponseDTO> getAllQuestions() {
+        List<Hiragana> allChars = hiraganaRepository.findAll();
+
+        if (allChars.isEmpty()) throw new RuntimeException("Database empty");
+
+        return allChars.stream().map(correct -> {
+            // Efficiently pick 3 wrong answers from the in-memory list
+            List<String> options = new ArrayList<>();
+            options.add(correct.getRomaji());
+
+            List<Hiragana> distractors = new ArrayList<>(allChars);
+            distractors.remove(correct); // Remove the correct answer
+            Collections.shuffle(distractors); // Shuffle the remaining
+
+            // Take top 3
+            distractors.subList(0, 3).forEach(d -> options.add(d.getRomaji()));
+            Collections.shuffle(options); // Shuffle options so correct isn't always first
+
+            return QuizResponseDTO.builder()
+                    .questionId(correct.getId())
+                    .character(correct.getCharacter())
+                    .options(options)
+                    .build();
+        }).toList();
+    }
 }
