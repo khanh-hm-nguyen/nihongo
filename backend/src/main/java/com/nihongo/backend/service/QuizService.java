@@ -1,8 +1,9 @@
 package com.nihongo.backend.service;
 
 import com.nihongo.backend.dto.*;
-import com.nihongo.backend.model.Hiragana;
-import com.nihongo.backend.repository.HiraganaRepository;
+import com.nihongo.backend.model.CharacterType;
+import com.nihongo.backend.model.JapaneseCharacter;
+import com.nihongo.backend.repository.CharacterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,37 +16,12 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class QuizService {
 
-    private final HiraganaRepository hiraganaRepository;
+    private final CharacterRepository characterRepository;
     private final Random random = new Random();
 
-    public QuizResponseDTO generateQuiz() {
-        long count = hiraganaRepository.count();
-        if (count == 0) throw new RuntimeException("Database is empty!");
-
-        // pick a random ID for the correct answer
-        long randomId = random.nextLong(count) + 1;
-        Hiragana correct = hiraganaRepository.findById(randomId)
-                .orElseThrow(() -> new RuntimeException("Character not found"));
-
-        // fetch 3 random wrong options
-        List<Hiragana> distractors = hiraganaRepository.findRandomDistractors(correct.getId());
-
-        List<String> options = new ArrayList<>();
-        options.add(correct.getRomaji());
-        distractors.forEach(d -> options.add(d.getRomaji()));
-        Collections.shuffle(options);
-
-        return QuizResponseDTO.builder()
-                .questionId(correct.getId())
-                .character(correct.getCharacter())
-                .options(options)
-                .build();
-
-
-    }
 
     public AnswerResponseDTO checkAnswer(AnswerRequestDTO request) {
-        Hiragana correctChar = hiraganaRepository.findById(request.getQuestionId())
+        JapaneseCharacter correctChar = characterRepository.findById(request.getQuestionId())
                 .orElseThrow(() -> new RuntimeException("Invalid Question ID"));
 
         boolean isCorrect = correctChar.getRomaji().equalsIgnoreCase(request.getSelectedRomaji());
@@ -56,4 +32,40 @@ public class QuizService {
                 .message(isCorrect ? "Correct! Well done." : "Oops! The correct answer was " + correctChar.getRomaji())
                 .build();
     }
+
+
+    public List<QuizResponseDTO> getAllQuestions(CharacterType type) {
+        // 1. Fetch only the characters of the requested type
+        List<JapaneseCharacter> allChars = characterRepository.findByType(type);
+
+        if (allChars.isEmpty()) throw new RuntimeException("Database empty for type: " + type);
+
+        // 2. Generate questions for the list
+        return allChars.stream().map(correct -> {
+
+            // Create options list
+            List<String> options = new ArrayList<>();
+            options.add(correct.getRomaji());
+
+            // Create a pool of distractors (wrong answers) from the SAME list
+            List<JapaneseCharacter> distractors = new ArrayList<>(allChars);
+            distractors.remove(correct); // Remove the correct answer
+            Collections.shuffle(distractors); // Shuffle to randomize
+
+            // Take top 3 wrong answers
+            distractors.stream()
+                    .limit(3)
+                    .forEach(d -> options.add(d.getRomaji()));
+
+            Collections.shuffle(options); // Shuffle options so correct answer isn't always first
+
+            return QuizResponseDTO.builder()
+                    .questionId(correct.getId())
+                    .character(correct.getCharacter())
+                    .options(options)
+                    .build();
+        }).toList();
+    }
+
+
 }

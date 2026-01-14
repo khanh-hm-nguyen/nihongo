@@ -1,6 +1,8 @@
 package com.nihongo.backend.repository;
 
+import com.nihongo.backend.model.CharacterType;
 import com.nihongo.backend.model.Hiragana;
+import com.nihongo.backend.model.JapaneseCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -8,9 +10,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface HiraganaRepository extends JpaRepository<Hiragana, Long> {
+public interface CharacterRepository extends JpaRepository<JapaneseCharacter, Long> {
 
     // Custom query to fetch random distractors (wrong answers)
-    @Query(value = "SELECT * FROM hiragana_characters WHERE id != :correctId ORDER BY RAND() LIMIT 3", nativeQuery = true)
+    @Query(value = "SELECT * FROM japanese_character WHERE id != :correctId ORDER BY RAND() LIMIT 3", nativeQuery = true)
     List<Hiragana> findRandomDistractors(Long correctId);
+
+    List<JapaneseCharacter> findByType(CharacterType type);
 }

@@ -5,16 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-/**
- * Hiragana Table to store master list of Hiragana characters
- */
 @Entity
-@Table(name = "hiragana_characters")
+@Table(name = "japanese_character") // Renamed table to be clear
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hiragana {
+public class JapaneseCharacter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +21,8 @@ public class Hiragana {
 
     @Column(nullable = false)
     private String romaji;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CharacterType type;
 }
