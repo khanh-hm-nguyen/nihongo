@@ -14,3 +14,5 @@ export interface QuizResponse {
     character: string;
     options: string[]
 }
+
+export type QuizType = "HIRAGANA" | "KATAKANA";
